@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP3 Player mit Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        input[type="time"], input[type="file"], button {
+            margin: 5px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MP3 Player mit Timer</h1>
+        <input type="file" id="fileInput" accept="audio/mp3">
+        <div>
+            <label for="startTime">Startzeit (HH:MM:SS):</label>
+            <input type="time" id="startTime" step="1">
+        </div>
+        <div>
+            <label for="stopTime">Stopzeit (HH:MM:SS):</label>
+            <input type="time" id="stopTime" step="1">
+        </div>
+        <button id="setTimerButton">Timer setzen</button>
+        <audio id="audioPlayer" loop controls></audio>
+    </div>
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const audioPlayer = document.getElementById('audioPlayer');
+            audioPlayer.src = URL.createObjectURL(file);
+        });
+
+        document.getElementById('setTimerButton').addEventListener('click', function() {
+            const startTimeInput = document.getElementById('startTime').value;
+            const stopTimeInput = document.getElementById('stopTime').value;
+
+            if (!startTimeInput || !stopTimeInput) {
+                alert('Bitte sowohl Start- als auch Stopzeit angeben.');
+                return;
+            }
+
+            const [startHours, startMinutes, startSeconds] = startTimeInput.split(':').map(Number);
+            const [stopHours, stopMinutes, stopSeconds] = stopTimeInput.split(':').map(Number);
+
+            const now = new Date();
+            const startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHours, startMinutes, startSeconds);
+            const stopTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), stopHours, stopMinutes, stopSeconds);
+
+            if (startTime < now) {
+                startTime.setDate(startTime.getDate() + 1);
+            }
+            if (stopTime < now) {
+                stopTime.setDate(stopTime.getDate() + 1);
+            }
+
+            const audioPlayer = document.getElementById('audioPlayer');
+
+            const startTimeout = setTimeout(() => {
+                audioPlayer.play();
+            }, startTime - now);
+
+            const stopTimeout = setTimeout(() => {
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+                clearTimeout(startTimeout);
+                clearTimeout(stopTimeout);
+            }, stopTime - now);
+        });
+    </script>
+</body>
+</html>
